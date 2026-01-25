@@ -1,16 +1,62 @@
-# React + Vite
+## Sipmple Map (react-simple-maps d3 framer-motion)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### react-simple-maps
 
-Currently, two official plugins are available:
+#### CWE
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+CWE-400: Неконтролируемое потребление ресурсов
+Тип уязвимости: Отказ в обслуживании с помощью регулярных выражений (ReDoS)
+Затронутая зависимость: версии d3-color до версии 3.1.0
+react-simple-maps Статус: Основной пакет react-simple-maps (версия 3.0.0 и, вероятно, более ранние версии) имеет конфликтующие зависимости, которые препятствуют прямому обновлению до исправленной версии d3-color в рамках его текущей структуры. Проблема все еще остается открытой в официальном репозитории.
 
-## React Compiler
+### d3
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+#### CVE
 
-## Expanding the ESLint configuration
+CVE-2017-16044
+Описание: пакет оказался вредоносным (malicious module / typosquatting)
+Затронутые версии: все версии пакета „d3.js“, который был опубликован под этим именем в npm
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+CWE-200: Exposure of Sensitive Information (утечка данных)
+
+CWE-506: Embedded Malicious Code (в некоторых классификациях)
+
+#### CWE
+
+CWE-200 – Exposure of Sensitive Information to an Unauthorized Actor — утечка чувствительной информации из-за исполнения чужого вредоносного кода.
+
+CWE-506 – Embedded Malicious Code — встроенный вредоносный код (неофициальное дополнительное обозначение в ряде источников).
+
+### framer-motion
+
+Официально CWE и CVE нет. Но пользователи жалуются на:
+
+- выполнение вредоносного кода при установке,
+
+- кража секретов/ключей,
+
+- полный компромисс системы
+
+## MapLibre (react-simple-maps d3 framer-motion)
+
+#### CWE
+
+CWE-506 – Embedded Malicious Code — встроенный вредоносный код
+
+## AtlasMap (d3-geo d3-shape topojson-client world-atlas)
+
+### d3-geo
+
+CWE и CVE нет
+
+### d3-shape
+
+CWE и CVE нет
+
+### topojson-client
+
+CWE и CVE нет
+
+### world-atlas
+
+CWE и CVE нет
