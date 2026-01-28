@@ -1,12 +1,9 @@
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { geoMercator, geoPath } from "d3-geo";
-import { line, curveBasis } from "d3-shape";
 import { feature } from "topojson-client";
-import worldData from "../../world-110m.json";
+import worldData from "../../countries-110m.json";
+import Arrow from "../arrow/arrow";
 
-/* ======================
-   Хук размеров окна
-====================== */
 function useWindowSize() {
   const [size, setSize] = useState({
     width: window.innerWidth,
@@ -28,12 +25,36 @@ function useWindowSize() {
 }
 
 /* ======================
-   Компонент карты
+   Кривая маршрута
 ====================== */
+function curvedPath(from, to) {
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+
+  const cx = (from[0] + to[0]) / 2 - dy * 0.25;
+  const cy = (from[1] + to[1]) / 2 + dx * 0.25;
+
+  return `M ${from[0]} ${from[1]} Q ${cx} ${cy} ${to[0]} ${to[1]}`;
+}
+
+function generateCountryColors(countries) {
+  const colors = {};
+
+  countries.features.forEach((country, index) => {
+    const hue = (index * 137.508) % 360;
+    const saturation = 60 + Math.random() * 30;
+    const lightness = 40 + Math.random() * 30;
+
+    colors[country.properties.name || `country-${index}`] =
+      `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  });
+
+  return colors;
+}
+
 export default function AtlasMap({ routes }) {
   const { width, height } = useWindowSize();
 
-  // 🌍 Проекция
   const projection = useMemo(
     () =>
       geoMercator()
@@ -44,36 +65,20 @@ export default function AtlasMap({ routes }) {
 
   const pathGenerator = useMemo(() => geoPath(projection), [projection]);
 
-  // 🌐 Земля
-  const land = useMemo(() => feature(worldData, worldData.objects.land), []);
-
-  // ✏️ Генератор кривых
-  const curvedLine = useMemo(
-    () =>
-      line()
-        .x((d) => d[0])
-        .y((d) => d[1])
-        .curve(curveBasis),
+  const land = useMemo(
+    () => feature(worldData, worldData.objects.countries),
     [],
   );
 
-  // ➰ Построение дуги
-  const buildArc = (from, to) => {
-    const source = projection([from.lon, from.lat]);
-    const target = projection([to.lon, to.lat]);
-    if (!source || !target) return null;
-
-    const midX = (source[0] + target[0]) / 2;
-    const midY = (source[1] + target[1]) / 2 - height / 8;
-
-    return curvedLine([source, [midX, midY], target]);
-  };
+  const countryColors = useMemo(() => {
+    if (!land) return {};
+    return generateCountryColors(land);
+  }, [land]);
 
   return (
     <svg
       width={width}
       height={height}
-      viewBox={`0 0 ${width} ${height}`}
       style={{
         width: "1440px",
         height: "600px",
@@ -81,83 +86,65 @@ export default function AtlasMap({ routes }) {
         display: "block",
       }}
     >
-      {/* 🔺 Наконечник стрелки */}
-      <defs>
-        <marker
-          id="arrowhead"
-          markerWidth="4"
-          markerHeight="4"
-          refX="3.5"
-          refY="2"
-          orient="auto"
-          markerUnits="strokeWidth"
-        >
-          <path d="M 0 0 L 4 2 L 0 4 z" fill="red" />
-        </marker>
-      </defs>
-
       {/* 🌍 Земля */}
       <g>
-        {land.features.map((geo, i) => (
-          <path
-            key={i}
-            d={pathGenerator(geo)}
-            fill="#5dade2"
-            stroke="#0a2a43"
-            strokeWidth={0.4}
-          />
-        ))}
-      </g>
-
-      {/* 📍 Города */}
-      <g>
-        {routes.map((r, i) => {
-          const from = projection([r.from.lon, r.from.lat]);
-          const to = projection([r.to.lon, r.to.lat]);
-          if (!from || !to) return null;
+        {land.features.map((geo, i) => {
+          const countryName = geo.properties.name || `country-${i}`;
+          const fillColor = countryColors[countryName] || "#4a5568";
 
           return (
-            <g key={i}>
-              <circle
-                cx={from[0]}
-                cy={from[1]}
-                r={4}
-                fill="#00e5ff"
-                stroke="#0a2a43"
-                strokeWidth={1.5}
-              />
-              <circle
-                cx={to[0]}
-                cy={to[1]}
-                r={4}
-                fill="#ff5252"
-                stroke="#0a2a43"
-                strokeWidth={1.5}
-              />
-            </g>
+            <path
+              key={`country-${i}`}
+              d={pathGenerator(geo)}
+              fill={fillColor}
+              stroke="#1a365d"
+              strokeWidth={0.4}
+              className="country"
+              data-country={countryName}
+            />
           );
         })}
       </g>
 
       {/* ✈️ Маршруты */}
-      <g>
-        {routes.map((r, i) => {
-          const d = buildArc(r.from, r.to);
-          if (!d) return null;
+      {routes.map((r, i) => {
+        const from = projection([r.from.lon, r.from.lat]);
+        const to = projection([r.to.lon, r.to.lat]);
+        if (!from || !to) return null;
 
-          return (
+        const pathId = `route-${i}`;
+        const d = curvedPath(from, to);
+
+        return (
+          <g key={i}>
+            <circle cx={from[0]} cy={from[1]} r={4} fill="#fff" />
+            <circle cx={to[0]} cy={to[1]} r={4} fill="#fff" />
+
+            {/* линия */}
             <path
-              key={i}
+              id={pathId}
               d={d}
               fill="none"
               stroke={r.color || "#ffffff"}
-              strokeWidth={8}
+              strokeWidth={2.5}
               strokeLinecap="round"
-              markerEnd="url(#arrowhead)"
-            />
-          );
-        })}
-      </g>
+              strokeDasharray="1000"
+              strokeDashoffset="1000"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="1000"
+                to="0"
+                dur="4.25s"
+                fill="freeze"
+                begin="0s"
+              />
+            </path>
+
+            <Arrow pathId={pathId} color={r.color || "#ffffff"} duration="1s" />
+          </g>
+        );
+      })}
     </svg>
   );
 }
