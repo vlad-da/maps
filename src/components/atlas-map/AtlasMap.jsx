@@ -1,7 +1,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
-import worldData from "../../countries-110m.json";
+import worldData from "../../map/countries/countries-50m.json";
+// import worldData from "../../map/countries/countries-110m.json";
 import Arrow from "../arrow/arrow";
 
 function useWindowSize() {
@@ -69,7 +70,7 @@ export default function AtlasMap({ routes }) {
     () => feature(worldData, worldData.objects.countries),
     [],
   );
-
+  console.log(worldData.objects);
   const countryColors = useMemo(() => {
     if (!land) return {};
     return generateCountryColors(land);
@@ -135,7 +136,7 @@ export default function AtlasMap({ routes }) {
                 attributeName="stroke-dashoffset"
                 from="1000"
                 to="0"
-                dur="4.25s"
+                dur="3s"
                 fill="freeze"
                 begin="0s"
               />
