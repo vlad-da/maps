@@ -14,6 +14,9 @@ const Layout = () => {
           <li>
             <Link to="/simple-map">SimpleMap</Link>
           </li>
+          <li>
+            <Link to="/deck-map">deck-map</Link>
+          </li>
         </ul>
       </nav>
       <main style={{ padding: "20px" }}>

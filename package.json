@@ -10,10 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@amcharts/amcharts4": "^4.10.40",
+    "@amcharts/amcharts4-geodata": "^4.1.31",
+    "@deck.gl/layers": "^9.2.8",
+    "@deck.gl/react": "^9.2.8",
     "@maplibre/maplibre-gl-geocoder": "^1.9.4",
     "d3": "^7.9.0",
     "d3-geo": "^3.1.1",
     "d3-shape": "^3.2.0",
+    "deck.gl": "^9.2.8",
     "framer-motion": "^12.27.5",
     "leaflet": "^1.9.4",
     "maplibre-gl": "^5.16.0",
